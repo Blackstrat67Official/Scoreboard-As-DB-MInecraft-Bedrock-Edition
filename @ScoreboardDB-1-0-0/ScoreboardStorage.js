@@ -180,6 +180,61 @@ export class ScoreboardStorage {
     }
 
     /* =========================
+       ADVANCED SEARCH & QUERY
+    ========================= */
+
+    /**
+     * Find ALL JSON objects using a callback
+     * callback(data) => boolean
+     * @returns {Array} Array of matched objects {id, data}
+     */
+    static findAll(objectiveName, callback) {
+        const objective = world.scoreboard.getObjective(objectiveName);
+        if (!objective) return [];
+
+        const results = [];
+        for (const p of objective.getParticipants()) {
+            const parsed = this._parse(p.displayName);
+            if (parsed && callback(parsed)) {
+                results.push({
+                    id: objective.getScore(p),
+                    data: parsed
+                });
+            }
+        }
+        return results;
+    }
+
+    /**
+     * Fast check to see if a record exists by its ID
+     * (Skips JSON parsing for better performance)
+     * @returns {boolean}
+     */
+    static exists(objectiveName, id) {
+        const objective = world.scoreboard.getObjective(objectiveName);
+        if (!objective) return false;
+
+        for (const p of objective.getParticipants()) {
+            if (objective.getScore(p) === id) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get the total number of records in the database
+     * (Extremely fast, just reads the array length)
+     * @returns {number}
+     */
+    static count(objectiveName) {
+        const objective = world.scoreboard.getObjective(objectiveName);
+        if (!objective) return 0;
+
+        return objective.getParticipants().length;
+    }
+
+    /* =========================
        CLEAR
     ========================= */
 
