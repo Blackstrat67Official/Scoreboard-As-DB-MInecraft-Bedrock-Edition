@@ -249,15 +249,50 @@ export class ScoreboardStorage {
     }
 
     /**
-     * Get the total number of records in the database
-     * (Extremely fast, just reads the array length)
+     * Count records in the database based on conditions.
+     * - If 'query' is omitted: returns the total number of records (fast).
+     * - If 'query' is an object: counts records that exactly match the attributes.
+     * - If 'query' is a function: counts records where the callback returns true.
+     * @param {string} objectiveName
+     * @param {object|function} [query] - Optional. Example: { role: "admin" } OR (data) => data.livelli > 10
      * @returns {number}
      */
-    static count(objectiveName) {
+    static count(objectiveName, query) {
         const objective = world.scoreboard.getObjective(objectiveName);
         if (!objective) return 0;
 
-        return objective.getParticipants().length;
+        const participants = objective.getParticipants();
+
+        // 1. Se non ci sono condizioni, ritorna semplicemente il totale
+        if (query === undefined) {
+            return participants.length;
+        }
+
+        let totalCount = 0;
+        const isFunction = typeof query === "function";
+
+        for (const p of participants) {
+            const parsed = this._parse(p.displayName);
+            if (!parsed) continue;
+
+            // 2. Condizione tramite funzione (es. per calcoli matematici > o <)
+            if (isFunction) {
+                if (query(parsed)) totalCount++;
+            } 
+            // 3. Condizione tramite oggetto (match esatto degli attributi)
+            else if (typeof query === "object") {
+                let match = true;
+                for (const key in query) {
+                    if (parsed[key] !== query[key]) {
+                        match = false;
+                        break; // Ottimizzazione: smette di controllare se un attributo non combacia
+                    }
+                }
+                if (match) totalCount++;
+            }
+        }
+
+        return totalCount;
     }
 
     /* =========================
