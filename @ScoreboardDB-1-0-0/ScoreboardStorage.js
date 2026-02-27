@@ -82,7 +82,7 @@ export class ScoreboardStorage {
     /**
      * Retrieve a JSON object by its ID
      */
-    static getById(objectiveName, id) {
+    static getElementById(objectiveName, id) {
         const objective = world.scoreboard.getObjective(objectiveName);
         if (!objective) return null;
 
