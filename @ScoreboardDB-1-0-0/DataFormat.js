@@ -74,4 +74,66 @@ export class DataFormat {
         if (isNaN(num)) num = fallback;
         return Math.max(min, Math.min(max, num));
     }
+
+    /* =========================
+       DATA CONVERTERS
+    ========================= */
+
+    /**
+     * Convert a string or number to Binary.
+     * Useful for obfuscating data or creating bitmasks.
+     * @param {string|number} input
+     * @returns {string}
+     */
+    static toBinary(input) {
+        if (typeof input === 'number') {
+            return input.toString(2);
+        }
+        if (typeof input === 'string') {
+            return input.split('')
+                .map(char => char.charCodeAt(0).toString(2).padStart(8, '0'))
+                .join('');
+        }
+        return "0";
+    }
+
+    /**
+     * Convert a string or number to Hexadecimal.
+     * Often used to shorten long numbers or hide text.
+     * @param {string|number} input
+     * @returns {string}
+     */
+    static toHex(input) {
+        if (typeof input === 'number') {
+            return input.toString(16);
+        }
+        if (typeof input === 'string') {
+            return input.split('')
+                .map(char => char.charCodeAt(0).toString(16).padStart(2, '0'))
+                .join('');
+        }
+        return "0";
+    }
+
+    /**
+     * Convert a boolean to a single Bit (1 or 0).
+     * Saves space in JSON (saving `1` takes less memory than saving `true`).
+     * @param {boolean} bool
+     * @returns {number} 1 or 0
+     */
+    static toBit(bool) {
+        return bool ? 1 : 0;
+    }
+
+    /**
+     * Convert a simple array to a CSV string (Comma Separated Values).
+     * Saves space by removing JSON array brackets `[]` and quotes `""`.
+     * Example: ["apple", "sword"] -> "apple,sword"
+     * @param {Array} array
+     * @returns {string}
+     */
+    static toCSV(array) {
+        if (!Array.isArray(array)) return "";
+        return array.join(',');
+    }
 }
