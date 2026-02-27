@@ -206,17 +206,43 @@ export class ScoreboardStorage {
     }
 
     /**
-     * Fast check to see if a record exists by its ID
-     * (Skips JSON parsing for better performance)
+     * Check if a record exists.
+     * - If 'query' is omitted: returns true if the objective has AT LEAST one record.
+     * - If 'query' is a number: checks the ID (fast, no parsing).
+     * - If 'query' is an object: parses records to find a match.
+     * @param {string} objectiveName
+     * @param {number|object} [query] - Optional. Example: 5 OR { name: "StellaEXE", livelli: 50 }
      * @returns {boolean}
      */
-    static exists(objectiveName, id) {
+    static exists(objectiveName, query) {
         const objective = world.scoreboard.getObjective(objectiveName);
         if (!objective) return false;
 
+        // Se query non viene passata, controlliamo solo se c'è almeno un record salvato
+        if (query === undefined) {
+            return objective.getParticipants().length > 0;
+        }
+
+        const isId = typeof query === "number";
+
         for (const p of objective.getParticipants()) {
-            if (objective.getScore(p) === id) {
-                return true;
+            // 1. Ricerca iper-veloce tramite ID
+            if (isId) {
+                if (objective.getScore(p) === query) return true;
+                continue;
+            }
+
+            // 2. Ricerca per attributi
+            const parsed = this._parse(p.displayName);
+            if (parsed) {
+                let match = true;
+                for (const key in query) {
+                    if (parsed[key] !== query[key]) {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) return true;
             }
         }
         return false;
