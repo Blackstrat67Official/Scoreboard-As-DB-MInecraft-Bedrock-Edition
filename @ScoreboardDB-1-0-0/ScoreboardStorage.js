@@ -95,24 +95,52 @@ export class ScoreboardStorage {
     }
 
     /**
-     * Retrieve all stored JSON objects
-     */
-    static getAll(objectiveName) {
-        const objective = world.scoreboard.getObjective(objectiveName);
-        if (!objective) return [];
+     * Retrieve stored JSON objects, optionally filtering by conditions.
+     * - If 'query' is omitted: returns all records.
+     * - If 'query' is an object: returns records matching exact attributes.
+     * - If 'query' is a function: returns records where the callback returns true.
+     * @param {string} objectiveName
+     * @param {object|function} [query] - Optional. Example: { role: "admin" } OR (data) => data.livelli > 10
+     * @returns {Array<{id: number, data: any}>} Array of matched objects
+     */
+    static getElements(objectiveName, query) {
+        const objective = world.scoreboard.getObjective(objectiveName);
+        if (!objective) return [];
 
-        const result = [];
-        for (const p of objective.getParticipants()) {
-            const parsed = this._parse(p.displayName);
-            if (parsed !== null) {
-                result.push({
-                    id: objective.getScore(p),
-                    data: parsed
-                });
-            }
-        }
-        return result;
-    }
+        const result = [];
+        const isFunction = typeof query === "function";
+        const isObject = typeof query === "object" && query !== null;
+
+        for (const p of objective.getParticipants()) {
+            const parsed = this._parse(p.displayName);
+            if (parsed !== null) {
+                let match = true; // Di base, se non c'è query, tutti sono validi
+
+                // Se è stata passata una query, verifichiamo la condizione
+                if (query !== undefined) {
+                    if (isFunction) {
+                        match = query(parsed);
+                    } else if (isObject) {
+                        for (const key in query) {
+                            if (parsed[key] !== query[key]) {
+                                match = false;
+                                break; // Interrompe il controllo chiavi per ottimizzare
+                            }
+                        }
+                    }
+                }
+
+                // Se la condizione è soddisfatta (o se non c'era nessuna condizione), aggiungi ai risultati
+                if (match) {
+                    result.push({
+                        id: objective.getScore(p),
+                        data: parsed
+                    });
+                }
+            }
+        }
+        return result;
+    }
 
     /* =========================
        UPDATE
