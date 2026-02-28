@@ -163,6 +163,66 @@ export class ScoreboardStorage {
         return false;
     }
 
+    /**
+     * Update JSON objects based on conditions (Partial update / Merge).
+     * - If 'query' is an object: finds records matching exact attributes.
+     * - If 'query' is a function: finds records where the callback returns true.
+     * @param {string} objectiveName
+     * @param {object|function} query - Example: { uuid: "xxxxx" } OR (data) => data.livello < 10
+     * @param {object|function} newData - The properties to update, OR a callback (oldData) => newData
+     * @returns {number} The amount of records successfully updated
+     */
+    static update(objectiveName, query, newData) {
+        const objective = world.scoreboard.getObjective(objectiveName);
+        if (!objective) return 0;
+
+        let updatedCount = 0;
+        const isQueryFunction = typeof query === "function";
+        const isQueryObject = typeof query === "object" && query !== null;
+        
+        // Permette di passare una funzione per calcoli complessi (es. oldData.money + 100)
+        const isNewDataFunction = typeof newData === "function";
+
+        for (const p of objective.getParticipants()) {
+            const parsed = this._parse(p.displayName);
+            if (parsed !== null) {
+                let match = false;
+
+                // 1. Verifica la condizione (Query)
+                if (isQueryFunction) {
+                    match = query(parsed);
+                } else if (isQueryObject) {
+                    match = true;
+                    for (const key in query) {
+                        if (parsed[key] !== query[key]) {
+                            match = false;
+                            break;
+                        }
+                    }
+                }
+
+                // 2. Se c'è un match, aggiorna i dati
+                if (match) {
+                    const id = objective.getScore(p);
+                    objective.removeParticipant(p);
+                    
+                    let dataToSave;
+                    if (isNewDataFunction) {
+                        // L'utente ha fornito una funzione per modificare i vecchi dati
+                        dataToSave = newData(parsed);
+                    } else {
+                        // Merge: Unisce i vecchi dati con i nuovi (sovrascrive solo le chiavi fornite)
+                        dataToSave = { ...parsed, ...newData };
+                    }
+
+                    objective.setScore(this._stringify(dataToSave), id);
+                    updatedCount++;
+                }
+            }
+        }
+        return updatedCount;
+    }
+
     /* =========================
        DELETE
     ========================= */
