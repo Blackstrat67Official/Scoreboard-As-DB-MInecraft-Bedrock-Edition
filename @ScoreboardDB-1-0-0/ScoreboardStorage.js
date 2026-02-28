@@ -243,6 +243,51 @@ export class ScoreboardStorage {
         return false;
     }
 
+    /**
+     * Delete records based on conditions (Massive delete).
+     * - If 'query' is an object: deletes records matching exact attributes.
+     * - If 'query' is a function: deletes records where the callback returns true.
+     * @param {string} objectiveName
+     * @param {object|function} query - Example: { fazione: "Banditi" } OR (data) => data.livello < 5
+     * @returns {number} The amount of records successfully deleted
+     */
+    static delete(objectiveName, query) {
+        const objective = world.scoreboard.getObjective(objectiveName);
+        if (!objective) return 0;
+
+        let deletedCount = 0;
+        const isQueryFunction = typeof query === "function";
+        const isQueryObject = typeof query === "object" && query !== null;
+
+        for (const p of objective.getParticipants()) {
+            const parsed = this._parse(p.displayName);
+            if (parsed !== null) {
+                let match = false;
+
+                // 1. Verifica la condizione (Query)
+                if (isQueryFunction) {
+                    match = query(parsed);
+                } else if (isQueryObject) {
+                    match = true;
+                    for (const key in query) {
+                        if (parsed[key] !== query[key]) {
+                            match = false;
+                            break; // Ottimizzazione: smette al primo attributo che non combacia
+                        }
+                    }
+                }
+
+                // 2. Se c'è un match, elimina il record e aggiorna il contatore
+                if (match) {
+                    objective.removeParticipant(p);
+                    deletedCount++;
+                }
+            }
+        }
+        
+        return deletedCount;
+    }
+
     /* =========================
        SEARCH
     ========================= */
