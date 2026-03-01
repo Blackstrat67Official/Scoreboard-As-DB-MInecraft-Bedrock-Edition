@@ -1,6 +1,3 @@
-Certamente! Ecco la documentazione per `DataSchema` direttamente qui in chat, pronta per essere copiata:
-
-```markdown
 # 📐 DataSchema Utility
 
 The `DataSchema` class provides a way to define strict blueprints (schemas) for your database structures. 
@@ -182,9 +179,5 @@ world.afterEvents.playerSpawn.subscribe((event) => {
     const newPlayer = schemaManager.resolve("PlayerSchema", { name: event.player.name });
     CacheManager.save("players", newPlayer);
 });
-
-```
-
-```
 
 ```
