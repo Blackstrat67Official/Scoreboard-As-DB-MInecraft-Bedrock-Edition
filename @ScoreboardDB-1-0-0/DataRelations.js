@@ -6,7 +6,7 @@ import { ScoreboardStorage } from "./ScoreboardStorage.js";
  * Supports Direct relations (1:1, N:1, N:N) and Reverse relations (1:N) to hydrate
  * raw data with the actual linked objects directly from the scoreboard.
  */
-export class Relation {
+export class DataRelations {
     /**
      * Stores all the relationship definitions in RAM.
      * Structure: Map<SourceObjective, Array<BindingConfig>>
