@@ -168,16 +168,6 @@ Simply import the `schemaManager` object you just exported at the very top of yo
 
 ```javascript
 // main.js (Your Add-on Entry Point)
-import { world } from "@minecraft/server";
 import { schemaManager } from "./schemaSetup.js";
-import { CacheManager } from "./db/CacheManager.js";
-
-world.afterEvents.playerSpawn.subscribe((event) => {
-    if (!event.initialSpawn) return;
-
-    // Resolve the player data using our globally set up schema!
-    const newPlayer = schemaManager.resolve("PlayerSchema", { name: event.player.name });
-    CacheManager.save("players", newPlayer);
-});
-
+...
 ```
