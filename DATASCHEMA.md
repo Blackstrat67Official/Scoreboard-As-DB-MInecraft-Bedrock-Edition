@@ -83,19 +83,19 @@ The core engine of the utility. It compares incoming, potentially incomplete use
 
 ```javascript
 // 1. We receive incomplete data (e.g., just the player's name)
-const rawInput = { name: "StellaEXE" };
+const rawInput = { name: "Steve" };
 
 // 2. Resolve the data using the schema
 const finalData = schemaManager.resolve("PlayerSchema", rawInput);
 
 /* Output (finalData):
 {
-    name: "StellaEXE",                          <-- Preserved from input
-    uuid: "f47ac10b-58cc-4372-a567-0e02b2c3d479", <-- Auto-generated
-    joinedAt: 1709034567123,                    <-- Auto-generated
-    money: 100,                                 <-- Default fallback
-    isVip: false                                <-- Default fallback
-}
+    name: "Steve",                                  <-- Preserved from input
+    uuid: "f47ac10b-58cc-4372-a567-0e02b2c3d479",   <-- Auto-generated
+    joinedAt: 1709034567123,                        <-- Auto-generated
+    money: 100,                                     <-- Default fallback
+    isVip: false                                    <-- Default fallback
+} 
 */
 
 // 3. Save safely to the database!
