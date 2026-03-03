@@ -1,3 +1,6 @@
+/*
+   Still in BETA
+*/
 import { ScoreboardStorage } from "./ScoreboardStorage";
 
 /**
