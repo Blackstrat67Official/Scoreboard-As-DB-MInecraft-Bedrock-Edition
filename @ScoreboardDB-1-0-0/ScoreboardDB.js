@@ -1,5 +1,5 @@
-export { CacheManager } from "./CacheManager";
 export { DataFormat } from "./DataFormat";
-export { DataRelations } from "./DataRelations";
+export { DataRelationships } from "./DataRelationships";
 export { DataSchema } from "./DataSchema";
 export { ScoreboardStorage } from "./ScoreboardStorage";
+export { Event } from "./Event";
